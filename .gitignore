@@ -1,0 +1,44 @@
+# --- Python / Django ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+
+# Django local DBs
+*.sqlite3
+helpdesk/db.sqlite3
+helpdesk/helpdesk/db.sqlite3
+
+# Media & collected static
+media/
+helpdesk/media/
+staticfiles/
+helpdesk/staticfiles/
+
+# Environments & local config
+env/
+.env
+.venv/
+venv/
+myenv/
+
+# Editors & OS junk
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+dist/
+build/
+
+# Node (if any)
+node_modules/
+
+# Misc
+local_settings.py
