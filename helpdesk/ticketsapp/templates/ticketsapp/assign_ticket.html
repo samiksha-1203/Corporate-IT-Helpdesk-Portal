@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Assign Ticket{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Assign Ticket #{{ ticket.ticket_id }}</h4>
+                </div>
+                <div class="card-body">
+                    <div class="ticket-details mb-4">
+                        <h5>{{ ticket.title }}</h5>
+                        <div class="badge badge-{{ ticket.priority|lower }}">{{ ticket.get_priority_display }}</div>
+                        <p class="text-muted mt-2">Reported by {{ ticket.created_by.username }} on {{ ticket.created_at|date:"M d, Y" }}</p>
+                        <div class="ticket-description mt-3">
+                            <p>{{ ticket.description }}</p>
+                        </div>
+                    </div>
+
+                    <form method="post" action="{% url 'assign_ticket' ticket.id %}">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="support_engineer"><strong>Assign to Support Engineer:</strong></label>
+                            <select name="support_engineer" id="support_engineer" class="form-control" required>
+                                <option value="">-- Select Support Engineer --</option>
+                                {% for engineer in support_engineers %}
+                                <option value="{{ engineer.id }}">{{ engineer.username }} ({{ engineer.assigned_tickets.count }} active tickets)</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group mt-3">
+                            <label for="notes"><strong>Assignment Notes:</strong></label>
+                            <textarea name="notes" id="notes" class="form-control" rows="3" placeholder="Add any notes for the support engineer..."></textarea>
+                        </div>
+                        
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-user-check"></i> Assign Ticket
+                            </button>
+                            <a href="{% url 'pm_dashboard' %}" class="btn btn-outline-secondary ml-2">
+                                <i class="fas fa-arrow-left"></i> Back to Dashboard
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

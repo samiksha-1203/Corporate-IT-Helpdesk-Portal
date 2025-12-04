@@ -1,0 +1,1315 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Project Manager Dashboard{% endblock %}
+
+{% block content %}
+{% load custom_filters %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Command Central – Manager Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <style>
+        :root {
+            --primary: #6A0DAD; /* Purple primary color */
+            --primary-light: #E8D5F5;
+            --primary-dark: #4D0A7F;
+            --secondary: #6C757D;
+            --success: #28A745;
+            --success-light: #D4EDDA;
+            --warning: #FFC107;
+            --warning-light: #FFF3CD;
+            --danger: #DC3545;
+            --danger-light: #F8D7DA;
+            --info: #17A2B8;
+            --info-light: #D1ECF1;
+            --light: #F8F9FA;
+            --dark: #212529;
+            --gray: #A4B0BE;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #F5F7FA;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header Styles */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(106, 13, 173, 0.1);
+        }
+
+        .header-title h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+
+        .header-title p {
+            color: var(--gray);
+            font-size: 16px;
+        }
+
+        .user-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Navigation */
+        .dashboard-nav {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-bottom: 25px;
+        }
+
+        .nav-list {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-item {
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: var(--transition);
+            border-bottom: 3px solid transparent;
+            font-weight: 500;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            color: var(--primary);
+        }
+
+        .nav-item.active {
+            border-bottom-color: var(--primary);
+            background-color: var(--primary-light);
+        }
+
+        /* Stats Cards */
+        .stats-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            border-top: 4px solid var(--primary);
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        .unassigned-stat {
+            border-top-color: var(--warning);
+        }
+
+        .in-progress-stat {
+            border-top-color: var(--info);
+        }
+
+        .resolved-stat {
+            border-top-color: var(--success);
+        }
+
+        .rejected-stat {
+            border-top-color: var(--danger);
+        }
+        
+        /* Unassigned Tickets Section */
+        .unassigned-tickets {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 25px;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(106, 13, 173, 0.1);
+        }
+        
+        .ticket-list {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .ticket-list th, .ticket-list td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .ticket-list th {
+            background-color: var(--primary-light);
+            color: var(--primary-dark);
+            font-weight: 600;
+        }
+        
+        .ticket-list tr:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .ticket-id {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .priority-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .priority-high {
+            background-color: var(--danger-light);
+            color: var(--danger);
+        }
+        
+        .priority-medium {
+            background-color: var(--warning-light);
+            color: var(--warning);
+        }
+        
+        .priority-low {
+            background-color: var(--info-light);
+            color: var(--info);
+        }
+        
+        .assign-btn {
+            padding: 6px 12px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+        }
+        
+        .assign-btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .unassigned-icon {
+            background-color: var(--warning-light);
+            color: var(--warning);
+        }
+
+        .in-progress-icon {
+            background-color: var(--info-light);
+            color: var(--info);
+        }
+
+        .resolved-icon {
+            background-color: var(--success-light);
+            color: var(--success);
+        }
+
+        .rejected-icon {
+            background-color: var(--danger-light);
+            color: var(--danger);
+        }
+
+        .stat-title {
+            font-size: 14px;
+            color: var(--secondary);
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .stat-change {
+            font-size: 12px;
+            color: var(--success);
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .stat-change.negative {
+            color: var(--danger);
+        }
+
+        /* Command Bar */
+        .command-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 12px 16px;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 8px; /* closer spacing between search and filters */
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            flex: 0;
+            width: 340px; /* reduced size */
+            min-width: 260px;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius) 0 0 var(--border-radius);
+            font-size: 13px;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .search-bar input:focus {
+            border-color: var(--primary);
+        }
+
+        .search-btn {
+            padding: 8px 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .search-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-select, .assign-select, .action-select {
+            padding: 12px 16px; /* bigger controls */
+            border: 2px solid #ddd;
+            border-radius: var(--border-radius);
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            min-width: 160px;
+            transition: var(--transition);
+            background-color: white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        }
+
+        .filter-select:focus, .assign-select:focus, .action-select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(109,46,231,0.12);
+        }
+
+        .action-btn {
+            padding: 12px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        /* Improve visibility for In Progress text in stats */
+        .in-progress-stat .stat-title {
+            color: #000;
+        }
+
+        /* Make IN_PROGRESS status badge text black in table */
+        .badge-info {
+            color: #000;
+        }
+
+        /* Toggle Unassigned filter */
+        .toggle-group { display:flex; gap:8px; align-items:center; }
+        .toggle-filter {
+            padding: 8px 12px;
+            border-radius: var(--border-radius);
+            border: 1px solid #ddd;
+            background: #f7f7f7;
+            color: #333;
+            cursor: pointer;
+            font-size: 13px;
+            transition: var(--transition);
+        }
+        .toggle-filter.active { background: #111; color: #fff; border-color: #111; }
+
+        /* Unassigned badge visibility */
+        .badge-unassigned {
+            color: #000;
+            background-color: #f3f3f3;
+            border: 1px solid #ddd;
+        }
+
+        /* Colorful selects (updated by JS) */
+        .select-colored { color: #111; }
+        .select-red { background-color: #ffe0e6; color: #b00020; }
+        .select-amber { background-color: #fff4d6; color: #8a5a00; }
+        .select-green { background-color: #e8f8e8; color: #2e7d32; }
+        .select-blue { background-color: #e6f0ff; color: #1e40af; }
+        .select-purple { background-color: #f3e8ff; color: #6b21a8; }
+        .select-grey { background-color: #f0f0f0; color: #000; }
+
+        .action-btn.secondary {
+            background: white;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .action-btn.secondary:hover {
+            background: var(--primary-light);
+        }
+
+        .action-btn.danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .action-btn.danger:hover {
+            background: #c82333;
+        }
+
+        /* Main Content */
+        .dashboard-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+        }
+
+        /* Tickets Section */
+        .tickets-section, .sidebar-section {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 20px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .ticket-table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .ticket-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        .ticket-table th {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            font-weight: 600;
+            text-align: left;
+            padding: 12px 15px;
+            white-space: nowrap;
+        }
+
+        .ticket-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            color: #333;
+            vertical-align: middle;
+            transition: var(--transition);
+        }
+
+        /* Ensure attachment thumbnails are visible */
+        .attachment-thumb {
+            display: inline-block;
+            width: 72px;
+            height: 56px;
+            border-radius: 6px;
+            object-fit: cover;
+            background: #fafafa;
+            border: 1px solid #e5e7eb;
+        }
+
+        .ticket-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        /* Button Styles */
+        .btn-assign {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-assign:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        .ticket-table tr:hover td {
+            background-color: rgba(106, 13, 173, 0.05);
+        }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-primary {
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .badge-warning {
+            background-color: var(--warning-light);
+            color: #B78A00;
+        }
+
+        .badge-danger {
+            background-color: var(--danger-light);
+            color: var(--danger);
+        }
+
+        /* SLA badges next to status */
+        .sla-badge { display:inline-block; padding:4px 8px; border-radius:12px; font-size:12px; font-weight:600; }
+        .sla-badge.overdue { background:#FEF3F2; color:#DC2626; }
+        .sla-badge.due_today { background:#FFF3CD; color:#B78A00; }
+        .sla-badge.future { background:#E3EAF3; color:#3A5683; }
+
+        .priority-high {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        .priority-medium {
+            color: var(--warning);
+            font-weight: 600;
+        }
+
+        .priority-low {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .action-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .assign-btn {
+            padding: 8px 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 13px;
+            transition: var(--transition);
+            border: 1px solid var(--primary);
+            white-space: nowrap;
+        }
+
+        .assign-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .reject-btn {
+            padding: 8px 12px;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 13px;
+            transition: var(--transition);
+            border: 1px solid var(--danger);
+            white-space: nowrap;
+        }
+
+        .reject-btn:hover {
+            background: #c82333;
+        }
+
+        /* Team Members */
+        .team-member {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .team-member:last-child {
+            border-bottom: none;
+        }
+
+        .member-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 15px;
+        }
+
+        .member-name {
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+
+        .member-role {
+            font-size: 12px;
+            color: var(--secondary);
+        }
+
+        .member-tickets {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .member-workload {
+            width: 100px;
+            height: 6px;
+            background-color: #eee;
+            border-radius: 3px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .workload-bar {
+            height: 100%;
+            background-color: var(--primary);
+            border-radius: 3px;
+        }
+
+        /* SLA Alerts */
+        .sla-alert {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background-color: #FFF8E1;
+            border-left: 4px solid var(--warning);
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+        }
+
+        .sla-alert.critical {
+            background-color: #FFEBEE;
+            border-left-color: var(--danger);
+        }
+
+        .alert-icon {
+            font-size: 24px;
+            color: var(--warning);
+            margin-right: 15px;
+        }
+
+        .sla-alert.critical .alert-icon {
+            color: var(--danger);
+        }
+
+        .alert-title {
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .alert-desc {
+            font-size: 13px;
+            color: var(--secondary);
+        }
+
+        .alert-action {
+            color: var(--primary);
+            font-weight: 500;
+            font-size: 13px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        /* Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 20px rgba(106, 13, 173, 0.3);
+            cursor: pointer;
+            transition: var(--transition);
+            z-index: 100;
+        }
+
+        .fab:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-3px) scale(1.05);
+        }
+
+        .fab-label {
+            position: absolute;
+            right: 70px;
+            background-color: var(--primary);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: var(--transition);
+        }
+
+        .fab:hover .fab-label {
+            opacity: 1;
+            right: 80px;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s, fadeOut 0.5s 2.5s forwards;
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        .animated {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 1200px) {
+            .dashboard-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .command-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-bar, .filter-group {
+                width: 100%;
+            }
+
+            .filter-select {
+                flex: 1;
+                min-width: auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-list {
+                overflow-x: auto;
+                padding-bottom: 10px;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .nav-item {
+                white-space: nowrap;
+            }
+
+            .stats-container {
+                gap: 10px;
+            }
+
+            .stat-card {
+                min-width: calc(50% - 5px);
+            }
+
+            .ticket-table th, .ticket-table td {
+                padding: 8px 10px;
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .stats-container {
+                gap: 10px;
+            }
+
+            .stat-card {
+                min-width: 100%;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .action-btn {
+                flex: 1;
+                min-width: 100%;
+            }
+
+            .action-group {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .assign-btn, .reject-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Stats Cards -->
+        <div class="stats-container">
+            <div class="stat-card animated" style="animation-delay: 0.1s;" data-filter="all">
+                <div class="stat-header">
+                    <div class="stat-title">Total Tickets</div>
+                    <div class="stat-icon"><i class="fas fa-ticket-alt"></i></div>
+                </div>
+                <div class="stat-value">{{ total_tickets }}</div>
+                
+            </div>
+            <div class="stat-card unassigned-stat animated" style="animation-delay: 0.2s;" data-filter="unassigned">
+                <div class="stat-header">
+                    <div class="stat-title">Unassigned</div>
+                    <div class="stat-icon unassigned-icon"><i class="fas fa-user-clock"></i></div>
+                </div>
+                <div class="stat-value">{{ unassigned_tickets }}</div>
+                
+            </div>
+            <div class="stat-card in-progress-stat animated" style="animation-delay: 0.3s;" data-filter="in_progress">
+                <div class="stat-header">
+                    <div class="stat-title">In Progress</div>
+                    <div class="stat-icon in-progress-icon"><i class="fas fa-spinner"></i></div>
+                </div>
+                <div class="stat-value">{{ in_progress_tickets }}</div>
+                
+            </div>
+            <div class="stat-card resolved-stat animated" style="animation-delay: 0.4s;" data-filter="resolved">
+                <div class="stat-header">
+                    <div class="stat-title">Resolved</div>
+                    <div class="stat-icon resolved-icon"><i class="fas fa-check-circle"></i></div>
+                </div>
+                <div class="stat-value">{{ resolved_tickets }}</div>
+                
+            </div>
+            <div class="stat-card rejected-stat animated" style="animation-delay: 0.5s;" data-filter="rejected">
+                <div class="stat-header">
+                    <div class="stat-title">Rejected</div>
+                    <div class="stat-icon rejected-icon"><i class="fas fa-times-circle"></i></div>
+                </div>
+                <div class="stat-value">{{ rejected_tickets }}</div>
+                
+            </div>
+        </div>
+        
+        
+
+        <!-- Command Bar -->
+        <div class="command-bar animated" style="animation-delay: 0.6s;">
+            <div class="search-bar">
+                <input type="text" placeholder="Search tickets by ID, title or keyword...">
+                <button class="search-btn"><i class="fas fa-search"></i></button>
+            </div>
+            <div class="filter-group">
+                <select class="filter-select" data-type="priority">
+                    <option>All Priorities</option>
+                    <option>High</option>
+                    <option>Medium</option>
+                    <option>Low</option>
+                </select>
+                <select class="filter-select" data-type="status">
+                    <option>All Statuses</option>
+                    <option>Open</option>
+                    <option>In Progress</option>
+                    <option>Resolved</option>
+                    <option>Rejected</option>
+                </select>
+                <select class="filter-select" data-type="assigned">
+                    <option>All</option>
+                    <option>Unassigned</option>
+                    <option>Assigned</option>
+                </select>
+                <button class="action-btn secondary">
+                    <i class="fas fa-filter"></i> Filter
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="dashboard-content">
+            <!-- Tickets Section -->
+            <div class="tickets-section animated" style="animation-delay: 0.7s;">
+                <div class="section-header">
+                    <h2 class="section-title">Tickets Requiring Action</h2>
+                </div>
+                <div class="ticket-table-wrapper">
+                    <table class="ticket-table" id="pmTicketsTable">
+                        <thead>
+                            <tr>
+                                <th>Ticket ID</th>
+                                <th>Title</th>
+                                <th>Description</th>
+                                <th>Reporter</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Assigned To</th>
+                                <th>Attachment</th>
+                                <th>Last Updated</th>
+                                <th>Time to SLA</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ticket in all_tickets %}
+                            <tr 
+                                data-priority="{{ ticket.priority|lower }}"
+                                data-status="{{ ticket.status|lower }}"
+                                data-assigned="{% if ticket.assigned_to %}true{% else %}false{% endif %}">
+                                <td>{{ ticket.id }}</td>
+                                <td>{{ ticket.title }}</td>
+                                <td class="text-muted" style="max-width: 360px;">
+                                    {{ ticket.description|default_if_none:""|truncatechars:100 }}
+                                </td>
+                                <td>{{ ticket.created_by.username }}</td>
+                                <td class="priority-{{ ticket.priority|lower }}">{{ ticket.get_priority_display }}</td>
+                                <td>
+                                    <span class="badge 
+                                        {% if ticket.status == 'CLOSED' %}badge-danger
+                                        {% elif ticket.status == 'NEW' %}badge-warning
+                                        {% elif ticket.status == 'IN_PROGRESS' %}badge-info
+                                        {% else %}badge-success{% endif %}">
+                                        {{ ticket.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if ticket.assigned_to %}
+                                        <span class="badge badge-primary">{{ ticket.assigned_to.username }}</span>
+                                    {% else %}
+                                        <span class="badge badge-unassigned">Unassigned</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% with att=ticket.attachments.first %}
+                                        {% if att %}
+                                            {% with u=att.file.url|lower %}
+                                                {% if '.png' in u or '.jpg' in u or '.jpeg' in u or '.gif' in u or '.webp' in u %}
+                                                    <img src="{{ att.file.url }}" alt="" class="attachment-thumb" style="width:60px;height:48px;border-radius:4px;object-fit:cover;cursor: zoom-in;">
+                                                {% else %}
+                                                    <i class="fas fa-paperclip"></i>
+                                                {% endif %}
+                                            {% endwith %}
+                                        {% else %}
+                                            <span class="text-muted">None</span>
+                                        {% endif %}
+                                    {% endwith %}
+                                </td>
+                                <td>{{ ticket.updated_at|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if ticket.sla_due_at %}
+                                        <span class="sla-badge {{ ticket.sla_state|default:'future' }}">{{ ticket.sla_remaining_display|default:'—' }}</span>
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if not ticket.assigned_to and ticket.status == 'NEW' %}
+                                        <div class="action-group">
+                                            <select class="assign-select">
+                                                <option value="">Select agent</option>
+                                                {% for agent in support_team %}
+                                                <option value="{{ agent.id }}">{{ agent.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <button class="assign-btn" data-ticket-id="{{ ticket.id }}">Assign</button>
+                                            <button class="reject-btn" data-ticket-id="{{ ticket.id }}">Reject</button>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+        </div>
+        <!-- SLA criteria info (placed below the table, outside the card) -->
+        <div class="mt-3 p-3 border rounded bg-light">
+            <strong>Resolution time guidelines</strong>
+            <ul class="mb-0 mt-2">
+                <li>Critical issues (Urgent/Network): 2–4 hours</li>
+                <li>Hardware issues: 1–3 business days</li>
+                <li>Software/Access issues: 1–2 business days</li>
+                <li>General inquiries/Other: 1–5 business days</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Floating Action Button removed per requirements (moved to sidebar) -->
+
+    <!-- Image Modal -->
+    <div id="imageModal" class="image-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:9999; align-items:center; justify-content:center;">
+        <button type="button" class="close-modal" style="position:absolute; top:16px; right:16px; background:#fff; color:#000; border:none; border-radius:8px; padding:8px 12px; cursor:pointer;">Close</button>
+        <img src="" alt="attachment" style="max-width:90vw; max-height:85vh; border-radius:8px; box-shadow:0 12px 24px rgba(0,0,0,0.35);">
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Actions removed from this table per requirements.
+            
+            // Show toast notification
+            function showToast(message) {
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            }
+            
+            // Make table rows clickable
+            document.querySelectorAll('#pmTicketsTable tbody tr').forEach(row => {
+                row.addEventListener('click', function(e) {
+                    // Don't trigger if clicking on a button, select, or image
+                    if (!e.target.closest('button') && !e.target.closest('select') && !e.target.closest('img')) {
+                        const ticketId = this.querySelector('td:first-child').textContent;
+                        window.location.href = `/tickets/${ticketId}/`;
+                    }
+                });
+            });
+
+            // Robust client-side filters using data-* attributes
+            const filterBtn = document.querySelector('.action-btn.secondary');
+            const filterSelects = document.querySelectorAll('.filter-group select');
+            const selPriority = document.querySelector('.filter-group select[data-type="priority"]');
+            const selStatus = document.querySelector('.filter-group select[data-type="status"]');
+            const selAssigned = document.querySelector('.filter-group select[data-type="assigned"]');
+            // Search controls
+            const searchInput = document.querySelector('.search-bar input');
+            const searchButton = document.querySelector('.search-btn');
+
+            // Card-driven filters
+            let activeCard = { type: 'all', value: null };
+            document.querySelectorAll('.stats-container .stat-card').forEach(card => {
+                card.addEventListener('click', function(){
+                    const v = this.getAttribute('data-filter');
+                    if(v === 'all') {
+                        activeCard = { type: 'all', value: null };
+                        selStatus.value = 'All Statuses';
+                    } else if(v === 'unassigned') {
+                        activeCard = { type: 'assigned', value: 'unassigned' };
+                        selStatus.value = 'All Statuses';
+                    } else if(v === 'in_progress') {
+                        activeCard = { type: 'status', value: 'in progress' };
+                        selStatus.value = 'In Progress';
+                    } else if(v === 'resolved') {
+                        activeCard = { type: 'status', value: 'resolved' };
+                        selStatus.value = 'Resolved';
+                    } else if(v === 'rejected') {
+                        activeCard = { type: 'status', value: 'rejected' };
+                        selStatus.value = 'Rejected';
+                    }
+                    applyFilters();
+                });
+            });
+
+            function applyFilters(){
+                const priority = selPriority.value.toLowerCase();
+                let status = selStatus.value.toLowerCase();
+                const term = (searchInput && searchInput.value ? searchInput.value : '').toLowerCase();
+                // Override status from active card when applicable
+                if(activeCard.type === 'status') status = activeCard.value;
+                let assignedFilter = activeCard.type === 'assigned' ? 'unassigned' : '';
+                if(selAssigned){
+                    const v = selAssigned.value.toLowerCase();
+                    if(v === 'unassigned') assignedFilter = 'unassigned';
+                    else if(v === 'assigned') assignedFilter = 'assigned';
+                    else if(v === 'all') assignedFilter = '';
+                }
+                document.querySelectorAll('#pmTicketsTable tbody tr').forEach(row=>{
+                    const rp = row.dataset.priority;
+                    const rs = row.dataset.status;
+                    const ra = row.dataset.assigned === 'true' ? 'assigned' : 'unassigned';
+                    const text = row.textContent.toLowerCase();
+                    let show = true;
+                    if(priority !== 'all priorities' && rp !== priority) show = false;
+                    if(status !== 'all statuses'){
+                        const map = { 'open':'new', 'in progress':'in_progress', 'resolved':'resolved', 'rejected':'closed' };
+                        const selected = (map[status] || status).replace(' ','_');
+                        if(rs !== selected) show = false;
+                    }
+                    if(assignedFilter === 'unassigned' && ra !== 'unassigned') show = false;
+                    if(assignedFilter === 'assigned' && ra !== 'assigned') show = false;
+                    if(term && !text.includes(term)) show = false;
+                    row.style.display = show ? '' : 'none';
+                });
+            }
+            filterBtn.addEventListener('click', applyFilters);
+            if(searchButton) searchButton.addEventListener('click', applyFilters);
+            if(searchInput) searchInput.addEventListener('keyup', function(e){ if(e.key === 'Enter') applyFilters(); });
+
+            // Attachment image modal viewer
+            const modal = document.getElementById('imageModal');
+            const modalImg = modal.querySelector('img');
+            const closeModal = modal.querySelector('.close-modal');
+            document.querySelectorAll('.attachment-thumb').forEach(img => {
+                img.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    modalImg.src = img.src;
+                    modal.style.display = 'flex';
+                });
+            });
+            closeModal.addEventListener('click', () => { modal.style.display = 'none'; modalImg.src = ''; });
+            modal.addEventListener('click', (e)=>{
+                if(e.target === modal) { modal.style.display = 'none'; modalImg.src = ''; }
+            });
+
+            // Auto-apply on change and colorize selects
+            function styleSelect(sel){
+                sel.classList.remove('select-red','select-amber','select-green','select-blue','select-purple','select-grey','select-colored');
+                const type = sel.getAttribute('data-type');
+                const val = sel.value.toLowerCase();
+                if(type === 'priority'){
+                    if(val === 'high') sel.classList.add('select-red','select-colored');
+                    else if(val === 'medium') sel.classList.add('select-amber','select-colored');
+                    else if(val === 'low') sel.classList.add('select-green','select-colored');
+                } else if(type === 'status'){
+                    if(val === 'open') sel.classList.add('select-amber','select-colored');
+                    else if(val === 'in progress') sel.classList.add('select-blue','select-colored');
+                    else if(val === 'resolved') sel.classList.add('select-green','select-colored');
+                    else if(val === 'rejected') sel.classList.add('select-red','select-colored');
+                } else if(type === 'assigned'){
+                    if(val === 'unassigned') sel.classList.add('select-grey','select-colored');
+                    else if(val === 'assigned') sel.classList.add('select-blue','select-colored');
+                    else if(val === 'all') sel.classList.add('select-colored');
+                }
+            }
+            filterSelects.forEach(f=>{
+                styleSelect(f);
+                f.addEventListener('change', ()=>{ styleSelect(f); applyFilters(); });
+            });
+
+            // CSRF helper
+            function getCookie(name){
+                const value = `; ${document.cookie}`;
+                const parts = value.split(`; ${name}=`);
+                if(parts.length === 2) return parts.pop().split(';').shift();
+                return '';
+            }
+
+            // Assign via API (PM only) for unassigned & NEW
+            document.querySelectorAll('.assign-btn').forEach(btn => {
+                btn.addEventListener('click', function(){
+                    const tr = this.closest('tr');
+                    const ticketId = this.getAttribute('data-ticket-id');
+                    const select = tr.querySelector('.assign-select');
+                    const engineerId = select.value;
+                    if(!engineerId){ alert('Please select an agent'); return; }
+                    fetch(`/api/tickets/${ticketId}/assign/`, {
+                        method: 'POST',
+                        headers: { 'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+                        body: JSON.stringify({ assigned_to: engineerId })
+                    }).then(r=>r.json()).then(data=>{
+                        tr.dataset.assigned = 'true';
+                        tr.querySelector('td:nth-child(7)').innerHTML = `<span class="badge badge-primary">${select.options[select.selectedIndex].text}</span>`;
+                        applyFilters();
+                    }).catch(()=>alert('Failed to assign ticket'));
+                });
+            });
+
+            // Reject via API (status -> CLOSED)
+            document.querySelectorAll('.reject-btn').forEach(btn => {
+                btn.addEventListener('click', function(){
+                    const tr = this.closest('tr');
+                    const ticketId = this.getAttribute('data-ticket-id');
+                    if(!confirm(`Reject ticket #${ticketId}?`)) return;
+                    fetch(`/api/tickets/${ticketId}/`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+                        body: JSON.stringify({ status: 'CLOSED' })
+                    }).then(r=>r.json()).then(data=>{
+                        tr.dataset.status = 'closed';
+                        const statusCell = tr.querySelector('td:nth-child(6) span');
+                        statusCell.textContent = 'Cancelled';
+                        statusCell.className = 'badge badge-danger';
+                        // hide actions after rejection
+                        tr.querySelector('td:nth-child(11)').innerHTML = '<span class="badge badge-danger">Rejected</span>';
+                        applyFilters();
+                    }).catch(()=>alert('Failed to reject ticket'));
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+{% endblock %}

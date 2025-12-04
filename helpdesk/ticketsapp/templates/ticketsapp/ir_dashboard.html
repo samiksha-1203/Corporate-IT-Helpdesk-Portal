@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Issue Reporter Dashboard{% endblock %}
+{% block content %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Issue Reporter Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #A4B0BE; /* Updated primary color */
+            --primary-light: #E8ECF1;
+            --primary-dark: #8A99AA;
+            --secondary: #6C757D;
+            --success: #4CAF50;
+            --success-light: #D4EDDA;
+            --warning: #FFCF54;
+            --warning-light: #FFF3CD;
+            --info: #4DA3FF;
+            --info-light: #CCE5FF;
+            --light: #F8F9FA;
+            --dark: #212529;
+            --gray: #A4B0BE;
+            --border-radius: 10px;
+            --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --ticket-red: #E74C3C;
+            --ticket-red-dark: #C0392B;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        
+        .action-btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .action-btn.comment {
+            background-color: var(--info);
+        }
+        
+        .action-btn.comment:hover {
+            background-color: #3a7ab9;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #F5F7FA;
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: none;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            width: 100%;
+            padding: 10px 0;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .welcome-message {
+            width: auto;
+            margin-bottom: 0;
+        }
+
+        .welcome-message h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
+            flex-wrap: wrap;
+        }
+
+        .welcome-message h1 .user-badge {
+            background: var(--primary);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .welcome-message p {
+            color: var(--gray);
+            font-size: 16px;
+        }
+
+        .create-ticket-btn {
+            background: var(--ticket-red);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            white-space: nowrap;
+            box-shadow: 0 4px 8px rgba(231, 76, 60, 0.2);
+        }
+
+        .create-ticket-btn:hover {
+            background: var(--ticket-red-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(231, 76, 60, 0.3);
+        }
+
+        .search-container {
+            width: 100%;
+            margin-bottom: 20px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            box-shadow: var(--box-shadow);
+        }
+
+        .search-bar {
+            display: flex;
+            width: 100%;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius) 0 0 var(--border-radius);
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s;
+            background-color: white;
+        }
+
+        .search-bar input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(164, 176, 190, 0.2);
+        }
+
+        .search-bar button {
+            padding: 12px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-bar button:hover {
+            background: var(--primary-dark);
+        }
+
+        .stats-container {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 0;
+            flex-wrap: wrap;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .stat-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 15px 20px;
+            box-shadow: var(--box-shadow);
+            transition: all 0.3s;
+            cursor: pointer;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border: none;
+            min-width: 0;
+            flex: 1;
+            min-width: 160px;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-card.active {
+            box-shadow: 0 0 0 2px var(--primary);
+        }
+
+        .all-tickets {
+            background-color: var(--primary-light);
+        }
+        .all-tickets::before {
+            background: var(--primary);
+        }
+
+        .pending-tickets {
+            background-color: var(--warning-light);
+        }
+        .pending-tickets::before {
+            background: var(--warning);
+        }
+
+        .in-progress-tickets {
+            background-color: var(--info-light);
+        }
+        .in-progress-tickets::before {
+            background: var(--info);
+        }
+
+        .resolved-tickets {
+            background-color: var(--success-light);
+        }
+        .resolved-tickets::before {
+            background: var(--success);
+        }
+
+        .stat-info h3 {
+            font-size: 16px;
+            color: var(--dark);
+            margin-bottom: 10px;
+            font-weight: 600;
+            position: relative;
+            display: inline-block;
+        }
+
+        .stat-info h3::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 3px;
+        }
+
+        .stat-info p {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-top: 10px;
+        }
+
+        .tickets-container {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+            width: 100%;
+            transition: all 0.3s;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .tickets-container.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .tickets-container .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(164, 176, 190, 0.1);
+        }
+
+        .tickets-container .card-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .tickets-container .card-header i {
+            font-size: 24px;
+            color: var(--primary);
+            background-color: var(--primary-light);
+            padding: 10px;
+            border-radius: 50%;
+        }
+
+        .ticket-table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            width: 100%;
+        }
+
+        .ticket-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .ticket-table th {
+            background-color: var(--primary-light);
+            color: var(--dark);
+            font-weight: 600;
+            text-align: left;
+            padding: 12px 15px;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .ticket-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            color: #333;
+            vertical-align: top;
+            transition: all 0.3s;
+        }
+
+        .ticket-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .ticket-table tr:hover td {
+            background-color: rgba(164, 176, 190, 0.05);
+        }
+
+        .ticket-table tr.active {
+            background-color: rgba(164, 176, 190, 0.1);
+        }
+
+        .ticket-table tr.active td {
+            transform: scale(1.01);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+            min-width: 90px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .status-badge:hover {
+            transform: scale(1.05);
+        }
+
+        .status-pending {
+            background-color: var(--warning-light);
+            color: #B78A00;
+        }
+
+        .status-in-progress {
+            background-color: var(--info-light);
+            color: #000;
+        }
+
+        .status-resolved {
+            background-color: var(--success-light);
+            color: var(--success);
+        }
+
+        .attachment-cell {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+
+        .attachment-cell:hover {
+            color: var(--primary);
+        }
+
+        .attachment-icon {
+            color: var(--primary);
+            transition: all 0.3s;
+        }
+
+        .attachment-icon:hover {
+            transform: scale(1.2);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray);
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            color: #ddd;
+            margin-bottom: 15px;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+        }
+
+        /* FAQ Section */
+        .faq-section {
+            margin-top: 40px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 25px;
+        }
+
+        .faq-section h2 {
+            font-size: 24px;
+            color: var(--dark);
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .faq-section h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 3px;
+        }
+
+        .faq-item {
+            margin-bottom: 15px;
+            border: 1px solid #eee;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .faq-item:hover {
+            border-color: var(--primary-light);
+        }
+
+        .faq-question {
+            padding: 15px;
+            background-color: var(--light);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .faq-question:hover {
+            background-color: #eef2ff;
+        }
+
+        .faq-question span {
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .faq-answer {
+            padding: 0 15px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s, padding 0.3s;
+        }
+
+        .faq-item.active .faq-answer {
+            padding: 15px;
+            max-height: 500px;
+            background-color: white;
+        }
+
+        /* Ticket Form Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background-color: white;
+            width: 100%;
+            max-width: 600px;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 15px;
+        }
+
+        .modal-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, var(--primary), #eee, #eee);
+        }
+
+        .modal-header h2 {
+            color: var(--primary);
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-header h2 i {
+            font-size: 20px;
+        }
+
+        .close-btn {
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--gray);
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            color: var(--dark);
+            transform: rotate(90deg);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(164, 176, 190, 0.2);
+            outline: none;
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .attachment-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 15px;
+            background-color: var(--light);
+            border: 1px dashed #ccc;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            margin-top: 5px;
+            transition: all 0.3s;
+        }
+
+        .attachment-label:hover {
+            border-color: var(--primary);
+            background-color: #f0f4ff;
+        }
+
+        .submit-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 25px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            width: 100%;
+            font-weight: 500;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .submit-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(164, 176, 190, 0.3);
+        }
+
+        /* Success Modal */
+        .success-modal-content {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background-color: rgba(164, 176, 190, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: var(--primary);
+            font-size: 36px;
+            animation: bounce 0.6s;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-20px); }
+            60% { transform: translateY(-10px); }
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .create-ticket-btn {
+                width: 100%;
+            }
+            
+            .welcome-message h1 {
+                font-size: 24px;
+            }
+            
+            .stats-container {
+                grid-template-columns: 1fr 1fr;
+                width: 100%;
+            }
+            
+            .modal-content {
+                padding: 20px;
+            }
+
+            .ticket-table th, 
+            .ticket-table td {
+                padding: 8px 10px;
+                font-size: 14px;
+            }
+            
+            .stat-card {
+                min-width: calc(50% - 6px);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .welcome-message h1 {
+                font-size: 22px;
+            }
+            
+            .stats-container {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .search-bar button {
+                padding: 12px 15px;
+            }
+            
+            .search-bar button span {
+                display: none;
+            }
+            
+            .modal-header h2 {
+                font-size: 20px;
+            }
+
+            .create-ticket-btn {
+                width: 100%;
+                padding: 12px 20px;
+            }
+
+            .stat-card {
+                min-width: 100%;
+            }
+
+            header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+
+            .header-left {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+                width: 100%;
+            }
+        }
+
+        @media (min-width: 992px) {
+            header {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                gap: 20px;
+            }
+
+            .welcome-message {
+                width: auto;
+                margin-bottom: 0;
+            }
+
+            .welcome-message h1 {
+                justify-content: flex-start;
+            }
+
+            .create-ticket-btn {
+                margin-left: auto;
+            }
+            
+            .stats-container {
+                margin-right: 20px;
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <button class="create-ticket-btn" id="createTicketBtn" onclick="window.location.href='{% url 'ticket_create' %}'">
+                <i class="fas fa-plus"></i> Raise Ticket
+            </button>
+            
+            <div class="header-left">
+                <div class="stats-container" id="statsContainer">
+                    <div class="stat-card all-tickets" data-filter="all">
+                        <div class="stat-info">
+                            <h3>All Tickets</h3>
+                            <p>{{ all_tickets_count }}</p>
+                        </div>
+                    </div>
+                    <div class="stat-card pending-tickets" data-filter="Pending">
+                        <div class="stat-info">
+                            <h3>Pending Tickets</h3>
+                            <p>{{ pending_tickets_count }}</p>
+                        </div>
+                    </div>
+                    <div class="stat-card in-progress-tickets" data-filter="In Progress">
+                        <div class="stat-info">
+                            <h3>In Progress</h3>
+                            <p>{{ in_progress_tickets_count }}</p>
+                        </div>
+                    </div>
+                    <div class="stat-card resolved-tickets" data-filter="Resolved">
+                        <div class="stat-info">
+                            <h3>Resolved</h3>
+                            <p>{{ resolved_tickets_count }}</p>
+                        </div>
+                    </div>
+                    <div class="stat-card" style="background-color: #f8d7da;" data-filter="Cancelled">
+                        <div class="stat-info">
+                            <h3>Cancelled</h3>
+                            <p>{{ cancelled_tickets_count }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="search-container">
+            <div class="search-bar">
+                <input type="text" placeholder="Search by keyword or ticket ID...">
+                <button><i class="fas fa-search"></i> <span>Search</span></button>
+            </div>
+        </div>
+
+        <div class="tickets-container" id="ticketsContainer">
+            <div class="card-header">
+                <h2>My Tickets</h2>
+                <i class="fas fa-tasks"></i>
+            </div>
+            <div class="ticket-table-wrapper">
+                <table class="ticket-table" id="ticketsTable">
+                    <thead>
+                        <tr>
+                            <th>Ticket ID</th>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Start Date</th>
+                            <th>Est. Resolution</th>
+                            <th>Status</th>
+                            <th>Attachment</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ticket in tickets %}
+                        <tr data-status="{{ ticket.status }}">
+                            <td>{{ ticket.ticket_id }}</td>
+                            <td>{{ ticket.title }}</td>
+                            <td>{{ ticket.category }}</td>
+                            <td>{{ ticket.created_at|date:"d M Y" }}</td>
+                            <td>{% if ticket.sla_display %}{{ ticket.sla_display|date:"d M Y" }}{% else %}—{% endif %}</td>
+                            <td>
+                                <span class="status-badge 
+                                    {% if ticket.status == 'NEW' %}status-pending
+                                    {% elif ticket.status == 'IN_PROGRESS' %}status-in-progress
+                                    {% else %}status-resolved{% endif %}">
+                                    {{ ticket.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="attachment-cell">
+                                {% if ticket.attachments.count %}
+                                    {% with att=ticket.attachments.all.0 %}
+                                        {% if att %}
+                                            {% with url=att.file.url|lower %}
+                                                {% if '.png' in url or '.jpg' in url or '.jpeg' in url or '.gif' in url or '.webp' in url %}
+                                                    <img src="{{ att.file.url }}" alt="" style="width:80px;height:64px;border-radius:4px;object-fit:cover;">
+                                                    <a href="#" class="action-btn view-attachment-btn" data-image-url="{{ att.file.url }}" style="margin-left:8px;">View</a>
+                                                {% else %}
+                                                    <i class="fas fa-paperclip attachment-icon"></i>
+                                                    <a href="{% url 'ticket_detail' ticket.pk %}#attachments" class="action-btn" style="margin-left:8px;">View</a>
+                                                {% endif %}
+                                            {% endwith %}
+                                        {% endif %}
+                                    {% endwith %}
+                                    {{ ticket.attachments.count }}
+                                {% else %}
+                                    None
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'ticket_detail' ticket.pk %}" class="action-btn">View</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SLA criteria info (placed below the table, outside the card) -->
+        <div class="mt-3 p-3 border rounded bg-light">
+            <strong>Resolution time guidelines</strong>
+            <ul class="mb-0 mt-2">
+                <li>Critical issues (Urgent/Network): 2–4 hours</li>
+                <li>Hardware issues: 1–3 business days</li>
+                <li>Software/Access issues: 1–2 business days</li>
+                <li>General inquiries/Other: 1–5 business days</li>
+            </ul>
+        </div>
+
+        <!-- FAQ Section -->
+        <div class="faq-section">
+            <h2><i class="fas fa-question-circle"></i> Frequently Asked Questions</h2>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How do I check the status of my ticket?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>All your tickets are listed in the "My Tickets" section with their current status clearly displayed.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>What's the typical resolution time for tickets?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Resolution times vary by ticket type:</p>
+                    <ul style="margin-top: 8px; padding-left: 20px;">
+                        <li><strong>Critical issues</strong>: 2-4 hours</li>
+                        <li><strong>Hardware issues</strong>: 1-3 business days</li>
+                        <li><strong>Software issues</strong>: 1-2 business days</li>
+                        <li><strong>General inquiries</strong>: 1-5 business days</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How can I update or add information to my ticket?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Please reply to the email notification you received when the ticket was created, or contact our support team directly with your ticket number. We'll update the ticket with any additional information you provide.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% if messages %}
+  {% for message in messages %}
+    <div style="color: green;">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const faqQuestions = document.querySelectorAll('.faq-question');
+            faqQuestions.forEach(question => {
+                question.addEventListener('click', () => {
+                    const faqItem = question.parentElement;
+                    faqItem.classList.toggle('active');
+                    const icon = question.querySelector('i');
+                    if (faqItem.classList.contains('active')) {
+                        icon.classList.remove('fa-chevron-down');
+                        icon.classList.add('fa-chevron-up');
+                    } else {
+                        icon.classList.remove('fa-chevron-up');
+                        icon.classList.add('fa-chevron-down');
+                    }
+                });
+            });
+
+            const searchInput = document.querySelector('.search-bar input');
+            const searchButton = document.querySelector('.search-bar button');
+            const rows = document.querySelectorAll('#ticketsTable tbody tr');
+            const statCards = document.querySelectorAll('.stat-card');
+            let activeStatusFilter = 'all';
+
+            function applyFilters() {
+                const term = searchInput.value.toLowerCase();
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    const status = row.dataset.status;
+                    const matchesSearch = term ? text.includes(term) : true;
+                    let matchesStatus = true;
+                    switch (activeStatusFilter) {
+                        case 'Pending':
+                            matchesStatus = status === 'NEW';
+                            break;
+                        case 'In Progress':
+                            matchesStatus = status === 'IN_PROGRESS';
+                            break;
+                        case 'Resolved':
+                            matchesStatus = status === 'RESOLVED';
+                            break;
+                        case 'Cancelled':
+                            matchesStatus = status === 'CLOSED';
+                            break;
+                        case 'all':
+                        default:
+                            matchesStatus = true;
+                    }
+                    row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
+                });
+            }
+
+            searchButton.addEventListener('click', applyFilters);
+            searchInput.addEventListener('keyup', function(e) {
+                if (e.key === 'Enter') applyFilters();
+            });
+
+            document.getElementById('ticketsContainer').classList.add('visible');
+
+            statCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    activeStatusFilter = this.dataset.filter || 'all';
+                    searchInput.value = '';
+                    statCards.forEach(c => c.classList.toggle('active', c === card));
+                    applyFilters();
+                });
+            });
+
+            // Initial pass to ensure filters are applied on load
+            applyFilters();
+        });
+    </script>
+    <style>
+        .image-lightbox{position:fixed;inset:0;background:rgba(0,0,0,0.8);display:none;align-items:center;justify-content:center;z-index:9999}
+        .image-lightbox img{max-width:90vw;max-height:90vh;border-radius:8px;box-shadow:0 10px 25px rgba(0,0,0,0.4)}
+        .image-lightbox .close{position:absolute;top:20px;right:25px;color:#fff;font-size:28px;cursor:pointer}
+    </style>
+    <div class="image-lightbox" id="imageLightbox">
+        <span class="close" id="lightboxClose">×</span>
+        <img id="lightboxImg" src="" alt="">
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function(){
+            const lb=document.getElementById('imageLightbox');
+            const img=document.getElementById('lightboxImg');
+            const close=document.getElementById('lightboxClose');
+            document.querySelectorAll('.view-attachment-btn').forEach(btn=>{
+                btn.addEventListener('click',function(e){
+                    e.preventDefault();
+                    const url=this.getAttribute('data-image-url');
+                    if(!url) return;
+                    img.src=url;
+                    lb.style.display='flex';
+                });
+            });
+            close.addEventListener('click',()=>lb.style.display='none');
+            lb.addEventListener('click',e=>{ if(e.target===lb) lb.style.display='none'; });
+        });
+    </script>
+</body>
+</html>
+{% endblock %}

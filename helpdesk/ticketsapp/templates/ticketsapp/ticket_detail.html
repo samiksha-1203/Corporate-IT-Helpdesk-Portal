@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Ticket #{{ ticket.ticket_id }}{% endblock %}
+
+{% block header_title %}Ticket Details{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-0">{{ ticket.title }}</h5>
+                    <small class="text-muted">Reference: {{ ticket.ticket_id }}</small>
+                </div>
+                <span class="badge bg-secondary">{{ ticket.get_status_display }}</span>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-2">
+                    Created on {{ ticket.created_at|date:"M d, Y H:i" }} by {{ ticket.created_by.username }}
+                </p>
+                <p>{{ ticket.description }}</p>
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <strong>Category:</strong>
+                        <div>{{ ticket.category }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Priority:</strong>
+                        <div>{{ ticket.get_priority_display }}</div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    {% if user_role != 'ISSUE_REPORTER' %}
+                    <div class="col-md-6">
+                        <strong>Assigned To:</strong>
+                        <div>
+                            {% if ticket.assigned_to %}
+                                {{ ticket.assigned_to.username }}
+                            {% else %}
+                                <span class="text-muted">Unassigned</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="col-md-6">
+                        <strong>Status:</strong>
+                        <div>{{ ticket.get_status_display }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if user_role != 'ISSUE_REPORTER' %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">Comments</h6>
+            </div>
+            <div class="card-body">
+                {% if comments %}
+                    <div class="list-group mb-4">
+                        {% for comment in comments %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <strong>{{ comment.created_by.username }}</strong>
+                                    <small class="text-muted">{{ comment.created_at|date:"M d, Y H:i" }}</small>
+                                </div>
+                                <p class="mb-0 mt-2">{{ comment.text }}</p>
+                            </div>
+                        {% empty %}
+                            <p class="text-muted mb-0">No comments yet.</p>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No comments yet.</p>
+                {% endif %}
+
+                <!-- Comment form removed per requirements -->
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Attachments</h6>
+            </div>
+            <div class="card-body">
+                {% if attachments %}
+                    <ul class="list-group mb-3">
+                        {% for attachment in attachments %}
+                            {% with url=attachment.file.url|lower %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    {% if '.png' in url or '.jpg' in url or '.jpeg' in url or '.gif' in url or '.webp' in url %}
+                                        <img src="{{ attachment.file.url }}" alt="{{ attachment.file.name|cut:'attachments/' }}" class="preview-image" data-image-url="{{ attachment.file.url }}" style="max-width:180px;max-height:140px;border-radius:6px;object-fit:cover;cursor:pointer;">
+                                        <span>{{ attachment.file.name|cut:"attachments/" }}</span>
+                                    {% else %}
+                                        <i class="fas fa-paperclip me-2 text-muted"></i>
+                                        <a href="{{ attachment.file.url }}" target="_blank">{{ attachment.file.name|cut:"attachments/" }}</a>
+                                    {% endif %}
+                                </div>
+                                <small class="text-muted">{{ attachment.uploaded_at|date:"M d" }}</small>
+                            </li>
+                            {% endwith %}
+                        {% empty %}
+                            <li class="list-group-item text-muted">No attachments yet.</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">No attachments yet.</p>
+                {% endif %}
+
+                <style>
+                    .image-lightbox{position:fixed;inset:0;background:rgba(0,0,0,0.8);display:none;align-items:center;justify-content:center;z-index:9999}
+                    .image-lightbox img{max-width:90vw;max-height:90vh;border-radius:8px;box-shadow:0 10px 25px rgba(0,0,0,0.4)}
+                    .image-lightbox .close{position:absolute;top:20px;right:25px;color:#fff;font-size:28px;cursor:pointer}
+                </style>
+                <div class="image-lightbox" id="imageLightboxDetail">
+                    <span class="close" id="lightboxCloseDetail">×</span>
+                    <img id="lightboxImgDetail" src="" alt="">
+                </div>
+
+                <!-- Upload attachment form removed per requirements -->
+                <script>
+                    document.addEventListener('DOMContentLoaded', function(){
+                        const lb=document.getElementById('imageLightboxDetail');
+                        const img=document.getElementById('lightboxImgDetail');
+                        const close=document.getElementById('lightboxCloseDetail');
+                        document.querySelectorAll('.preview-image').forEach(el=>{
+                            el.addEventListener('click',function(){
+                                const url=this.getAttribute('data-image-url');
+                                if(!url) return;
+                                img.src=url;
+                                lb.style.display='flex';
+                            });
+                        });
+                        close.addEventListener('click',()=>lb.style.display='none');
+                        lb.addEventListener('click',e=>{ if(e.target===lb) lb.style.display='none'; });
+                    });
+                </script>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

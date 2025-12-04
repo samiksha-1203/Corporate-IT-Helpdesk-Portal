@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Dashboard{% endblock %}</title>
+
+    <!-- Bootstrap, Fonts, and Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #A4B0BE;
+            --primary-light: #E8ECF1;
+            --primary-dark: #8A99AA;
+            --secondary: #6C757D;
+            --success: #4CAF50;
+            --success-light: #D4EDDA;
+            --warning: #FFCF54;
+            --warning-light: #FFF3CD;
+            --info: #4DA3FF;
+            --info-light: #CCE5FF;
+            --light: #F8F9FA;
+            --dark: #212529;
+            --gray: #A4B0BE;
+            --ticket-red: #E74C3C;
+            --ticket-red-dark: #C0392B;
+            --border-radius: 10px;
+            --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --pm-color: #8e44ad;
+            --se-color: #4682B4;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--primary-light);
+            color: #333;
+        }
+
+        .header {
+            background-color: var(--primary-light);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--box-shadow);
+        }
+
+        .header-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-greeting {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+
+        .user-badge {
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        .user-badge.issue-reporter {
+            background: var(--primary);
+            color: var(--dark);
+        }
+
+        .user-badge.support-engineer {
+            background: var(--se-color);
+        }
+
+        .user-badge.project-manager {
+            background: var(--pm-color);
+        }
+
+        .welcome-message {
+            color: var(--secondary);
+            font-size: 16px;
+        }
+
+        .logout-btn {
+    border: none;
+    border-radius: var(--border-radius);
+    padding: 12px 25px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    /* Removed the default color declaration from here */
+}
+
+.logout-btn.issue-reporter {
+    background: var(--primary);
+    color: var(--dark); /* This sets the text color to dark for issue reporters */
+}
+
+.logout-btn.support-engineer {
+    background: var(--se-color);
+    color: white; /* Explicit white text for support engineers */
+}
+
+.logout-btn.project-manager {
+    background: var(--pm-color);
+    color: white; /* Explicit white text for project managers */
+}
+
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .logout-btn.issue-reporter:hover {
+            background: var(--primary-dark);
+        }
+
+        .logout-btn.support-engineer:hover {
+            background: #3a6d99;
+        }
+
+        .logout-btn.project-manager:hover {
+            background: #7d3999;
+        }
+
+        .container {
+            padding: 20px;
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-content">
+            <div class="user-greeting">
+                <span>Hi, {{ user.username }} 👋</span>
+                <span class="user-badge 
+                    {% if user.profile.role == 'support' %}support-engineer
+                    {% elif user.profile.role == 'manager' %}project-manager
+                    {% else %}issue-reporter{% endif %}">
+                    {% if user.profile.role == 'support' %}Support Engineer
+                    {% elif user.profile.role == 'manager' %}Project Manager
+                    {% else %}Issue Reporter{% endif %}
+                </span>
+            </div>
+            <p class="welcome-message">
+                {% if user.profile.role == 'support' %}
+                    Resolve and update tickets assigned to you.
+                {% elif user.profile.role == 'manager' %}
+                    You can manage tickets, assign engineers, and monitor progress here.
+                {% else %}
+                    Raising an issue is just a click away. We're here to help.
+                {% endif %}
+            </p>
+        </div>
+
+        <div>
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn 
+                        {% if user.profile.role == 'support' %}support-engineer
+                        {% elif user.profile.role == 'manager' %}project-manager
+                        {% else %}issue-reporter{% endif %}">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,153 @@
+{% extends "ticketsapp/base.html" %}
+{% load static %}
+
+{% block title %}Register - IT Helpdesk Portal{% endblock %}
+
+{% block content %}
+<div class="register-wrapper">
+    <div class="register-card card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0"><i class="fas fa-user-plus me-2"></i> Create your account</h4>
+        </div>
+                <div class="card-body">
+                    <style>
+                        .register-wrapper { 
+                            min-height: calc(100vh - 120px);
+                            display: flex; 
+                            align-items: center; 
+                            justify-content: center; 
+                            padding: 20px;
+                        }
+                        .register-card { 
+                            width: 100%; 
+                            max-width: 450px; 
+                            border-radius: 15px;
+                        }
+                        .form-vertical .form-label { font-weight: 500; }
+                        .input-icon { position: relative; }
+                        .input-icon .icon-left {
+                            position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+                            width: 28px; height: 28px; border-radius: 8px;
+                            background: #eef3ff; border: 1px solid #dbe5ff; box-shadow: inset 0 1px 1px rgba(0,0,0,0.03);
+                            display: flex; align-items: center; justify-content: center; color: #5c6f92;
+                        }
+                        .input-icon input { padding-left: 52px; padding-right: 46px; }
+                        .password-toggle {
+                            position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+                            width: 28px; height: 28px; border-radius: 8px; cursor: pointer; color: #5c6f92;
+                            background: #eef3ff; border: 1px solid #dbe5ff; display:flex; align-items:center; justify-content:center;
+                        }
+                        .password-toggle:hover { background: #e2eaff; }
+                        .input-icon input:focus ~ .password-toggle { border-color: #94c0ff; }
+                        .strength-meter { height: 6px; border-radius: 4px; background: #e9ecef; overflow: hidden; }
+                        .strength-meter > div { height: 100%; width: 0%; transition: width 0.2s ease; }
+                        .strength-weak { background: #dc3545; }
+                        .strength-medium { background: #ffc107; }
+                        .strength-strong { background: #28a745; }
+                    </style>
+
+                    <form method="post" novalidate class="form-vertical">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label class="form-label">Role</label>
+                            <div class="d-flex flex-column gap-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="role" id="role_ir" value="ir" required>
+                                    <label class="form-check-label" for="role_ir">Issue Reporter</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="role" id="role_se" value="se" required>
+                                    <label class="form-check-label" for="role_se">Support Engineer</label>
+                                </div>
+                            </div>
+                            <div class="form-text">Project Manager accounts are assigned by admin.</div>
+                        </div>
+
+                        <div class="mb-3 input-icon">
+                            <label for="email" class="form-label">Email</label>
+                            <span class="icon-left"><i class="fas fa-envelope"></i></span>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="you@example.com" required>
+                        </div>
+
+                        <div class="mb-3 input-icon">
+                            <label for="id_username" class="form-label">Username</label>
+                            <span class="icon-left"><i class="fas fa-user"></i></span>
+                            {{ form.username.errors }}
+                            <input type="text" name="username" id="id_username" class="form-control" required placeholder="Choose a username">
+                        </div>
+
+                        <div class="mb-3 input-icon">
+                            <label for="id_password1" class="form-label">Password</label>
+                            <span class="icon-left"><i class="fas fa-lock"></i></span>
+                            {{ form.password1.errors }}
+                            <input type="password" name="password1" id="id_password1" class="form-control" required placeholder="Create a strong password">
+                            <span class="password-toggle" data-target="id_password1"><i class="fas fa-eye"></i></span>
+                            <div class="mt-2 strength-meter" aria-hidden="true"><div id="pwd1StrengthBar"></div></div>
+                            <small id="pwd1Help" class="form-text text-muted">Use at least 8 characters with letters, numbers, and symbols.</small>
+                        </div>
+
+                        <div class="mb-3 input-icon">
+                            <label for="id_password2" class="form-label">Confirm Password</label>
+                            <span class="icon-left"><i class="fas fa-lock"></i></span>
+                            {{ form.password2.errors }}
+                            <input type="password" name="password2" id="id_password2" class="form-control" required placeholder="Re-enter your password">
+                            <span class="password-toggle" data-target="id_password2"><i class="fas fa-eye"></i></span>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-user-check me-2"></i> Register
+                        </button>
+                    </form>
+                    <div class="mt-3 text-center">
+                        <small>Already have an account? <a href="{% url 'login' %}">Login</a></small>
+                    </div>
+
+                    <script>
+                        (function(){
+                            function scorePassword(pwd){
+                                let score = 0;
+                                if(!pwd) return score;
+                                const unique = new Set(pwd).size;
+                                score += Math.min(10, unique);
+                                if(/[a-z]/.test(pwd)) score += 10;
+                                if(/[A-Z]/.test(pwd)) score += 10;
+                                if(/[0-9]/.test(pwd)) score += 10;
+                                if(/[^A-Za-z0-9]/.test(pwd)) score += 10;
+                                if(pwd.length >= 12) score += 10;
+                                else if(pwd.length >= 8) score += 5;
+                                return Math.min(50, score);
+                            }
+
+                            const pwd1 = document.getElementById('id_password1');
+                            const bar = document.getElementById('pwd1StrengthBar');
+                            const help = document.getElementById('pwd1Help');
+                            function renderStrength(){
+                                const s = scorePassword(pwd1.value);
+                                let pct = (s/50)*100;
+                                bar.style.width = pct + '%';
+                                bar.className = '';
+                                if(s < 20){ bar.classList.add('strength-weak'); help.textContent = 'Weak password'; }
+                                else if(s < 35){ bar.classList.add('strength-medium'); help.textContent = 'Medium strength'; }
+                                else { bar.classList.add('strength-strong'); help.textContent = 'Strong password'; }
+                            }
+                            pwd1 && pwd1.addEventListener('input', renderStrength);
+                            renderStrength();
+
+                            document.querySelectorAll('.password-toggle').forEach(btn => {
+                                btn.addEventListener('click', () => {
+                                    const targetId = btn.getAttribute('data-target');
+                                    const input = document.getElementById(targetId);
+                                    if(!input) return;
+                                    const isPwd = input.type === 'password';
+                                    input.type = isPwd ? 'text' : 'password';
+                                    btn.querySelector('i').className = isPwd ? 'fas fa-eye-slash' : 'fas fa-eye';
+                                });
+                            });
+                        })();
+                    </script>
+                </div>
+            </div>
+    </div>
+</div>
+{% endblock %}

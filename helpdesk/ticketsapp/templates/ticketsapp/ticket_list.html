@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Tickets List{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>Tickets</h2>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'ticket_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Create New Ticket
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-header bg-light">
+            <div class="row">
+                <div class="col">
+                    <h5 class="mb-0">All Tickets</h5>
+                </div>
+                <div class="col-auto">
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Filter
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="filterDropdown">
+                            <a class="dropdown-item" href="?status=NEW">New</a>
+                            <a class="dropdown-item" href="?status=IN_PROGRESS">In Progress</a>
+                            <a class="dropdown-item" href="?status=RESOLVED">Resolved</a>
+                            <a class="dropdown-item" href="?status=CLOSED">Closed</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="?priority=URGENT">Urgent Priority</a>
+                            <a class="dropdown-item" href="?priority=HIGH">High Priority</a>
+                            <a class="dropdown-item" href="?priority=MEDIUM">Medium Priority</a>
+                            <a class="dropdown-item" href="?priority=LOW">Low Priority</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Ticket ID</th>
+                            <th>Title</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                            <th>Category</th>
+                            <th>Created</th>
+                            <th>Assigned To</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if tickets %}
+                            {% for ticket in tickets %}
+                                <tr>
+                                    <td>{{ ticket.ticket_id }}</td>
+                                    <td>
+                                        <a href="{% url 'ticket_detail' ticket.id %}">{{ ticket.title }}</a>
+                                    </td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if ticket.status == 'NEW' %}badge-secondary
+                                            {% elif ticket.status == 'IN_PROGRESS' %}badge-warning
+                                            {% elif ticket.status == 'RESOLVED' %}badge-info
+                                            {% elif ticket.status == 'CLOSED' %}badge-success
+                                            {% else %}badge-secondary{% endif %}">
+                                            {{ ticket.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if ticket.priority == 'URGENT' %}badge-danger
+                                            {% elif ticket.priority == 'HIGH' %}badge-danger
+                                            {% elif ticket.priority == 'MEDIUM' %}badge-warning
+                                            {% else %}badge-info{% endif %}">
+                                            {{ ticket.get_priority_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ ticket.category }}</td>
+                                    <td>{{ ticket.created_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        {% if ticket.assigned_to %}
+                                            {{ ticket.assigned_to.username }}
+                                        {% else %}
+                                            <span class="text-muted">Unassigned</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'ticket_detail' ticket.id %}" class="btn btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            {% if user == ticket.created_by or user.is_staff %}
+                                            <a href="{% url 'ticket_update' ticket.id %}" class="btn btn-outline-secondary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center py-4">
+                                    <p class="text-muted mb-0">No tickets found</p>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% if tickets.has_other_pages %}
+        <div class="card-footer bg-light">
+            <nav aria-label="Tickets pagination">
+                <ul class="pagination justify-content-center mb-0">
+                    {% if tickets.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ tickets.previous_page_number }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&laquo;</span>
+                        </li>
+                    {% endif %}
+                    
+                    {% for i in tickets.paginator.page_range %}
+                        {% if tickets.number == i %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ i }}</span>
+                            </li>
+                        {% else %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if tickets.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ tickets.next_page_number }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&raquo;</span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

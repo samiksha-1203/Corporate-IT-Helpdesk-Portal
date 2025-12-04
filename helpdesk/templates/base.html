@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Dashboard{% endblock %}</title>
+
+    <!-- Bootstrap, Fonts, and Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #A4B0BE;
+            --primary-light: #E8ECF1;
+            --primary-dark: #8A99AA;
+            --secondary: #6C757D;
+            --success: #4CAF50;
+            --success-light: #D4EDDA;
+            --warning: #FFCF54;
+            --warning-light: #FFF3CD;
+            --info: #4DA3FF;
+            --info-light: #CCE5FF;
+            --light: #F8F9FA;
+            --dark: #212529;
+            --gray: #A4B0BE;
+            --ticket-red: #E74C3C;
+            --ticket-red-dark: #C0392B;
+            --border-radius: 10px;
+            --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --pm-color: #8e44ad;
+            --se-color: #4682B4;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--primary-light);
+            color: #333;
+        }
+
+        .header {
+            background-color: var(--primary-light);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--box-shadow);
+        }
+
+        .sidebar {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 20px;
+            height: calc(100vh - 100px);
+            position: sticky;
+            top: 20px;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: var(--border-radius);
+            color: var(--dark);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-link:hover {
+            background-color: var(--primary-light);
+        }
+
+        .sidebar-link.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        /* Removed emergency-link emphasis to keep neutral sidebar styling */
+
+        .sidebar-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .main-content {
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            border: none;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid var(--primary-light);
+            padding: 15px 20px;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .btn {
+            border-radius: var(--border-radius);
+            padding: 8px 16px;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            border-color: var(--success);
+        }
+
+        .btn-warning {
+            background-color: var(--warning);
+            border-color: var(--warning);
+            color: var(--dark);
+        }
+
+        .btn-info {
+            background-color: var(--info);
+            border-color: var(--info);
+            color: white;
+        }
+
+        .badge {
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background-color: var(--success-light);
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background-color: var(--warning-light);
+            color: var(--dark);
+        }
+
+        .badge-info {
+            background-color: var(--info-light);
+            color: var(--info);
+        }
+
+        .ticket-card {
+            border-left: 4px solid var(--ticket-red);
+            transition: transform 0.3s ease;
+        }
+
+        .ticket-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .ticket-card .priority-high {
+            color: var(--ticket-red);
+        }
+
+        .ticket-card .priority-medium {
+            color: var(--warning);
+        }
+
+        .ticket-card .priority-low {
+            color: var(--info);
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .avatar.pm {
+            background-color: var(--pm-color);
+        }
+
+        .avatar.se {
+            background-color: var(--se-color);
+        }
+
+        .avatar.ir {
+            background-color: var(--primary);
+        }
+
+        .stats-card {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .stats-card .number {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .stats-card .label {
+            color: var(--secondary);
+            font-size: 0.9rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        /* Custom styles for login and register pages */
+        .auth-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .auth-image {
+            flex: 1;
+            background-image: url('https://images.unsplash.com/photo-1581472723648-909f4851d4ae?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .auth-form {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 2rem;
+            background-color: white;
+        }
+
+        .auth-logo {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .auth-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+        }
+
+        .form-control {
+            border-radius: var(--border-radius);
+            padding: 12px 15px;
+            border: 1px solid var(--primary-light);
+            margin-bottom: 1rem;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(164, 176, 190, 0.25);
+        }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 2rem;
+            color: var(--secondary);
+        }
+
+        .auth-footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% if user.is_authenticated %}
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 d-md-block">
+                <div class="sidebar">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="avatar 
+                            {% if user_role == 'PROJECT_MANAGER' %}pm
+                            {% elif user_role == 'SUPPORT_ENGINEER' %}se
+                            {% else %}ir{% endif %}">
+                            {{ user.username|first|upper }}
+                        </div>
+                        <div class="ms-3">
+                            <h6 class="mb-0">{{ user.username }}</h6>
+                            <small class="text-muted">
+                                {% if user_role == 'PROJECT_MANAGER' %}
+                                    Project Manager
+                                {% elif user_role == 'SUPPORT_ENGINEER' %}
+                                    Support Engineer
+                                {% else %}
+                                    Issue Reporter
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <a href="{% if user_role == 'PROJECT_MANAGER' %}{% url 'pm_dashboard' %}
+                             {% elif user_role == 'SUPPORT_ENGINEER' %}{% url 'se_dashboard' %}
+                             {% else %}{% url 'ir_dashboard' %}{% endif %}" 
+                       class="sidebar-link {% if request.path == '/dashboard/ir/' or request.path == '/dashboard/pm/' or request.path == '/dashboard/se/' %}active{% endif %}">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                    
+                    
+
+                    {% if user_role == 'ISSUE_REPORTER' %}
+                    <a href="{% url 'ticket_create' %}" class="sidebar-link {% if '/tickets/create/' in request.path %}active{% endif %}">
+                        <i class="fas fa-plus-circle"></i> New Ticket
+                    </a>
+                    {% endif %}
+                    
+                    {% if user_role == 'PROJECT_MANAGER' %}
+                    <a href="{% url 'pm_users' %}" class="sidebar-link {% if '/dashboard/pm/users/' in request.path %}active{% endif %}">
+                        <i class="fas fa-users"></i> Users
+                    </a>
+                    
+                    <a href="#" class="sidebar-link">
+                        <i class="fas fa-chart-bar"></i> Reports
+                    </a>
+                    <!-- Emergency Ticket placed below Reports for PMs -->
+                    <a href="{% url 'pm_emergency_create' %}" class="sidebar-link {% if '/tickets/emergency/create/' in request.path %}active{% endif %}">
+                        <i class="fas fa-bolt"></i> Emergency Ticket
+                    </a>
+                    <!-- SLA Alerts placed below Create New for PMs -->
+                    <a href="{% url 'pm_sla' %}" class="sidebar-link {% if '/dashboard/pm/sla/' in request.path %}active{% endif %}">
+                        <i class="fas fa-bell"></i> SLA Alerts
+                    </a>
+                    {% endif %}
+                    
+                    <a href="{% url 'logout' %}" class="sidebar-link mt-5">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10">
+                <div class="header">
+                    <h4 class="mb-0">{% block header_title %}Dashboard{% endblock %}</h4>
+                    <div>
+                        <span class="badge bg-light text-dark">
+                            <i class="far fa-clock me-1"></i> {{ current_time|date:"F j, Y, g:i a" }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="main-content">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    {% block content %}{% endblock %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+        {% block auth_content %}{% endblock %}
+    {% endif %}
+
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

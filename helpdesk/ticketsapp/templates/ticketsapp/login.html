@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT Helpdesk Portal</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2980b9;
+            --dark-blue: #1a5276;
+            --tech-blue: #2471a3;
+            --pm-color: #8e44ad;
+            --se-color: #4682B4;
+            --ir-color: #A4B0BE;
+            --text-light: #7f8c8d;
+            --current-role-color: var(--pm-color);
+            --current-role-text: white;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(200, 200, 255, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(200, 255, 200, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 30% 70%, rgba(255, 200, 200, 0.1) 0%, transparent 20%);
+            background-size: 300% 300%;
+            z-index: -1;
+            opacity: 0.5;
+        }
+        
+        body.pm-role {
+            --current-role-color: var(--pm-color);
+            --current-role-text: white;
+            background-color: #f8f5ff;
+        }
+        
+        body.pm-role::before {
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(180, 140, 255, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(220, 180, 255, 0.1) 0%, transparent 20%);
+        }
+        
+        body.se-role {
+            --current-role-color: var(--se-color);
+            --current-role-text: white;
+            background-color: #f5f9ff;
+        }
+        
+        body.se-role::before {
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(70, 130, 180, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(100, 160, 210, 0.1) 0%, transparent 20%);
+        }
+        
+       body.ir-role {
+            --current-role-color: var(--ir-color);
+            --current-role-text: #333;
+            background-color: #f8f9fa;
+        }
+        
+        body.ir-role::before {
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(164, 176, 190, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(180, 190, 200, 0.1) 0%, transparent 20%);
+        }
+        
+        .login-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .login-card {
+            width: 100%;
+            max-width: 450px;
+            border-radius: 15px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            border: none;
+            overflow: hidden;
+            background-color: rgba(255, 255, 255, 0.95);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .pm-role .login-card {
+            border-left: 5px solid var(--pm-color);
+        }
+        
+        .se-role .login-card {
+            border-left: 5px solid var(--se-color);
+        }
+        
+        .ir-role .login-card {
+            border-left: 5px solid var(--ir-color);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, var(--current-role-color) 0%, var(--dark-blue) 100%);
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        #welcome-title {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+            white-space: nowrap;
+        }
+        .role-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: white;
+            color: var(--current-role-color);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .logo {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 20px;
+            background-color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .logo i {
+            font-size: 3.5rem;
+            color: var(--current-role-color);
+        }
+        
+        .role-selector {
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        
+        .role-selector-title {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            display: block;
+            font-weight: 500;
+        }
+        
+        .role-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .role-btn {
+            border: none;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            color: white;
+            text-align: center;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+            flex: 1;
+            max-width: 150px;
+            justify-content: center;
+        }
+        
+        .role-btn.active {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .role-btn i {
+            font-size: 1rem;
+        }
+        
+        .pm-btn {
+            background-color: var(--pm-color);
+        }
+        
+        .se-btn {
+            background-color: var(--se-color);
+        }
+        
+        .ir-btn {
+            background-color: var(--ir-color);
+            color: #333;
+        }
+        
+        .role-description {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            min-height: 50px;
+        }
+        
+        .btn-login {
+            background: linear-gradient(135deg, var(--current-role-color) 0%, var(--dark-blue) 100%);
+            border: none;
+            padding: 12px 25px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            color: var(--current-role-text);
+        }
+        
+        .form-control {
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            height: auto;
+        }
+        
+        .form-control:focus {
+            border-color: var(--current-role-color);
+            box-shadow: 0 0 0 0.25rem rgba(36, 113, 163, 0.25);
+        }
+        
+        .input-group {
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .input-group .form-control {
+            border-radius: 0 8px 8px 0 !important;
+            border-left: none;
+        }
+        
+        .input-group .input-group-text {
+            border-radius: 8px 0 0 8px !important;
+            border-right: none;
+        }
+        
+        .input-group-text {
+            background-color: white;
+            padding: 0 15px;
+        }
+        
+        .input-group:focus-within .input-group-text {
+            color: var(--current-role-color);
+        }
+        
+        .form-floating>label {
+            padding: 0.8rem 0.75rem;
+        }
+        
+        .password-toggle-container {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 5;
+        }
+        
+        .password-toggle {
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            padding: 0 10px;
+        }
+        
+        .form-check-input {
+            width: 1.2em;
+            height: 1.2em;
+            margin-top: 0.1em;
+            border: 2px solid var(--text-light);
+        }
+        
+        .form-check-input:checked {
+            background-color: var(--current-role-color);
+            border-color: var(--current-role-color);
+        }
+        
+        .form-check-input:focus {
+            box-shadow: 0 0 0 0.25rem rgba(36, 113, 163, 0.25);
+        }
+        
+        .form-check-label {
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .forgot-password {
+            color: var(--text-light);
+            text-decoration: none;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: white;
+            font-size: 0.9rem;
+            background: linear-gradient(135deg, var(--current-role-color) 0%, var(--dark-blue) 100%);
+        }
+        
+        @media (max-width: 576px) {
+            .login-card {
+                max-width: 95%;
+            }
+            
+            .role-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .role-btn {
+                max-width: 100%;
+                width: 100%;
+            }
+            
+            .logo {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .logo i {
+                font-size: 2.5rem;
+            }
+        }
+
+        /* Custom Alert Modal */
+        .alert-modal {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 350px;
+            max-width: 400px;
+        }
+        
+        .custom-alert {
+            border-left: 5px solid #dc3545;
+            animation: slideIn 0.3s ease-out, fadeOut 0.3s ease-out 4.7s forwards;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes fadeOut {
+            to { opacity: 0; }
+        }
+    </style>
+</head>
+<body class="pm-role">
+    <!-- Alert Modal Container -->
+    <div id="alertContainer" class="alert-modal"></div>
+
+    <div class="login-container">
+        <div class="login-card card">
+            <div class="card-header">
+                <div class="role-indicator">
+                    <i class="fas fa-user-tie"></i>
+                    <span>Project Manager</span>
+                </div>
+                <div class="logo">
+                    <i class="fas fa-headset"></i>
+                </div>
+                <h2 id="welcome-title">Welcome, Project Manager</h2>
+                <p class="mb-0" id="welcome-subtitle">Manage tickets and team workflows</p>
+            </div>
+            <div class="card-body">
+                <!-- Role Selector -->
+                <div class="role-selector">
+                    <span class="role-selector-title">SELECT YOUR ROLE:</span>
+                    <div class="role-buttons">
+                        <button type="button" class="role-btn pm-btn active" onclick="selectRole('pm', event)">
+                            <i class="fas fa-tasks"></i>
+                            <span>Manager</span>
+                        </button>
+                        <button type="button" class="role-btn se-btn" onclick="selectRole('se', event)">
+                            <i class="fas fa-cogs"></i>
+                            <span>Support</span>
+                        </button>
+                        <button type="button" class="role-btn ir-btn" onclick="selectRole('ir', event)">
+                            <i class="fas fa-bug"></i>
+                            <span>Reporter</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="role-description" id="roleDescription">
+                    As a Project Manager, you can oversee all tickets, assign tasks to team members, and track progress through analytics.
+                </div>
+   
+                <form id="loginForm" method="post" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    <!-- Hidden input for user role -->
+                    <input type="hidden" name="user_role" id="user_role" value="pm">
+                    
+                    <div class="mb-4">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                            <div class="form-floating flex-grow-1">
+                                <input type="text" class="form-control" id="username" name="username"
+                                value="{{ username_value|default:'' }}"
+                                       placeholder="Enter your username" required autofocus>
+                                <label for="username">Username</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4 password-field-container">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                            <div class="form-floating flex-grow-1">
+                                <input type="password" class="form-control" id="password" name="password"
+                                       placeholder="Enter your password" required>
+                                <label for="password">Password</label>
+                            </div>
+                            <div class="password-toggle-container">
+                                <button type="button" class="password-toggle" id="togglePassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="rememberMe" name="remember_me">
+                            <label class="form-check-label" for="rememberMe">Remember me</label>
+                        </div>
+                        <a href="{% url 'password_reset' %}" class="forgot-password" id="forgotPassword">Forgot password?</a>
+                    </div>
+                    
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-login btn-block" id="loginButton">
+                            <i class="fas fa-sign-in-alt me-2"></i> Login
+                        </button>
+                    </div>
+                </form>
+                <div class="text-center mb-3">
+                    <p>Don't have an account? <a href="{% url 'register' %}" class="text-decoration-none">Register here</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 text-md-start">
+                    <i class="fas fa-shield-alt me-2"></i> Secure Login
+                </div>
+                <div class="col-md-6 text-md-end">
+                    © {% now "Y" %} IT Support System | v2.1.0
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Role data
+        const roles = {
+            pm: {
+                title: "Project Manager",
+                greeting: "Manage tickets and team workflows",
+                description: "As a Project Manager, you can oversee all tickets, assign tasks to team members, and track progress through analytics.",
+                icon: "fa-user-tie",
+                colorClass: "pm-role"
+            },
+            se: {
+                title: "Support Engineer",
+                greeting: "Resolve technical issues efficiently",
+                description: "As a Support Engineer, you'll handle assigned tickets, troubleshoot issues, and provide technical solutions to users.",
+                icon: "fa-user-gear",
+                colorClass: "se-role"
+            },
+            ir: {
+                title: "Issue Reporter",
+                greeting: "Report and track your technical issues",
+                description: "As an Issue Reporter, you can submit new tickets, view your existing tickets, and communicate with support staff.",
+                icon: "fa-user",
+                colorClass: "ir-role"
+            }
+        };
+
+        // Role selection function
+        function selectRole(role, event) {
+            const roleData = roles[role];
+            document.body.className = roleData.colorClass;
+            document.getElementById('welcome-title').textContent = `Welcome, ${roleData.title}`;
+            document.getElementById('welcome-subtitle').textContent = roleData.greeting;
+            document.querySelector('.role-indicator').innerHTML = `<i class="fas ${roleData.icon}"></i><span>${roleData.title}</span>`;
+            document.querySelector('.logo i').style.color = `var(--${role}-color)`;
+            document.getElementById('roleDescription').textContent = roleData.description;
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.role-btn').forEach(btn => btn.classList.remove('active'));
+            
+            // Add active class to clicked button if event exists
+            if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            } else {
+                // Fallback if no event (like during initialization)
+                document.querySelector(`.role-btn.${role}-btn`).classList.add('active');
+            }
+            
+            // Ensure role input exists
+            let roleInput = document.getElementById('user_role');
+            if (!roleInput) {
+                roleInput = document.createElement('input');
+                roleInput.type = 'hidden';
+                roleInput.name = 'user_role';
+                roleInput.id = 'user_role';
+                document.getElementById('loginForm').appendChild(roleInput);
+            }
+            roleInput.value = role;
+        }
+
+        // Toggle password visibility
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordField = document.getElementById('password');
+            const icon = this.querySelector('i');
+            passwordField.type = passwordField.type === 'password' ? 'text' : 'password';
+            icon.classList.toggle('fa-eye-slash');
+            icon.classList.toggle('fa-eye');
+        });
+
+        // Error popup
+        function showErrorPopup(message, messageType = 'role_mismatch') {
+            const alertContainer = document.getElementById('alertContainer');
+            alertContainer.innerHTML = '';
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert custom-alert alert-${messageType === 'role_mismatch' ? 'warning' : 'danger'} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="fas ${messageType === 'role_mismatch' ? 'fa-exclamation-circle' : 'fa-user-lock'} me-2"></i>
+                    <div><strong>${messageType === 'role_mismatch' ? 'Role Mismatch!' : 'Login Failed!'}</strong><br>${message}</div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            alertContainer.appendChild(alertDiv);
+            setTimeout(() => alertDiv.remove(), 5000);
+        }
+
+        // Form submission debug
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            console.log('Submitting with role:', document.getElementById('user_role').value);
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            {% if messages %}
+                {% for message in messages %}
+                    (function(){
+                        const msg = '{{ message|escapejs }}';
+                        const tags = '{{ message.tags }}';
+                        const extra = '{{ message.extra_tags }}';
+                        if (extra === 'role_mismatch') {
+                            // Only warn when explicitly flagged as role mismatch
+                            showErrorPopup(msg, 'role_mismatch');
+                        } else if (tags && tags.indexOf('error') !== -1) {
+                            // Show login failure for actual error messages
+                            showErrorPopup(msg, 'login_failed');
+                        }
+                        // Ignore success/info messages to avoid noisy popups
+                    })();
+                {% endfor %}
+            {% endif %}
+            
+            // Prefill role from querystring ?role=pm|ir|se
+            const params = new URLSearchParams(window.location.search);
+            const roleParam = params.get('role');
+            const validRoles = ['pm','ir','se'];
+            const initialRole = validRoles.includes(roleParam) ? roleParam : 'pm';
+            selectRole(initialRole);
+        });
+    </script>
+</body>
+</html>
