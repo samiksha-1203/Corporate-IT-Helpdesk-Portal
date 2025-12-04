@@ -28,8 +28,6 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'change-me-dev-secret')
 # Allow toggling via environment variable.
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
-
 
 # Application definition
 LOGIN_URL = 'login'
@@ -129,7 +127,11 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Hosts for deployment
-ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '*').split(',')
+_raw_hosts = os.environ.get('DJANGO_ALLOWED_HOSTS', '')
+_hosts = [h.strip().rstrip('.') for h in _raw_hosts.split(',') if h.strip()]
+if not _hosts:
+    _hosts = ['localhost', '127.0.0.1', '.onrender.com']
+ALLOWED_HOSTS = ['*'] if '*' in _hosts else _hosts
 CSRF_TRUSTED_ORIGINS = [h for h in [
     'https://*.onrender.com',
     'https://*.pythonanywhere.com',
